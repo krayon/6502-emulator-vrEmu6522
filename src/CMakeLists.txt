@@ -1,4 +1,4 @@
-
+cmake_minimum_required(VERSION 3.18)
 
 add_library(vrEmu6522 vrEmu6522.c)
 
