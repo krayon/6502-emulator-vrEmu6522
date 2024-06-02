@@ -71,6 +71,16 @@ struct vrEmu6522_s
 #define VIA_IFR_T1  (1 << 6)
 #define VIA_IFR_IRQ (1 << 7)
 
+
+#define VIA_ACR_PA  (1 << 0)
+#define VIA_ACR_PB  (1 << 1)
+#define VIA_ACR_SR3 (1 << 2)
+#define VIA_ACR_SR2 (1 << 3)
+#define VIA_ACR_SR1 (1 << 4)
+#define VIA_ACR_T2  (1 << 5)
+#define VIA_ACR_T12 (1 << 6)
+#define VIA_ACR_T11 (1 << 7)
+
  /* ------------------------------------------------------------------
   *  HELPER FUNCTIONS
   * ----------------------------------------------------------------*/
@@ -254,7 +264,7 @@ VR_EMU_6522_DLLEXPORT void __time_critical_func(vrEmu6522Ticks)(VrEmu6522* vr652
     if (t1 <= 0)
     {
       viaIfrSetBit(vr6522, VIA_IFR_T1);
-      if (vr6522->reg[VIA_REG_ACR] & 0x40)
+      if (vr6522->reg[VIA_REG_ACR] & VIA_ACR_T12)
       {
         uint32_t latchVal = (vr6522->reg[VIA_REG_T1L_H] << 8) | vr6522->reg[VIA_REG_T1L_L];
         latchVal += t1;
@@ -276,7 +286,7 @@ VR_EMU_6522_DLLEXPORT void __time_critical_func(vrEmu6522Ticks)(VrEmu6522* vr652
     if (t2 <= 0)
     {
       viaIfrSetBit(vr6522, VIA_IFR_T2);
-      // one-shot just continues counting (from 0xffff)
+      // T2 just continues counting (from 0xffff)
       uint16_t newT2 = (vr6522->reg[VIA_REG_T2C_H] << 8) | vr6522->reg[VIA_REG_T2C_L];
       newT2 -= ticks;
       vr6522->reg[VIA_REG_T2C_H] = (newT2 & 0xff00) >> 8;
@@ -284,8 +294,8 @@ VR_EMU_6522_DLLEXPORT void __time_critical_func(vrEmu6522Ticks)(VrEmu6522* vr652
     }
     else
     {
-      vr6522->reg[VIA_REG_T2C_H] = (t2 & 0xff00) >> 8;
-      vr6522->reg[VIA_REG_T2C_L] = (t2 & 0x00ff);
+      vr6522->reg[VIA_REG_T2C_H] = (t2    & 0xff00) >> 8;
+      vr6522->reg[VIA_REG_T2C_L] = (t2    & 0x00ff);
     }
   }
 }
