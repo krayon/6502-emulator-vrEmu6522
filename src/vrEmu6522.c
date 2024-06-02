@@ -31,6 +31,7 @@ struct vrEmu6522_s
   vrEmu6522Model model;
 
   uint8_t reg[16];
+  uint8_t T2L_L;
 
   bool t1Active;
   bool t2Active;
@@ -197,7 +198,12 @@ VR_EMU_6522_DLLEXPORT void vrEmu6522Write(VrEmu6522* vr6522, uint8_t addr, uint8
       vr6522->t1Active = true;
       break;
 
+    case VIA_REG_T2C_L:
+      vr6522->T2L_L = data;
+      return;
+
     case VIA_REG_T2C_H:
+      vr6522->reg[VIA_REG_T2C_L] = vr6522->T2L_L;
       viaIfrResetBit(vr6522, VIA_IFR_T2);
       vr6522->t2Active = true;
       break;
