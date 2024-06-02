@@ -87,6 +87,8 @@ struct vrEmu6522_s
   * ----------------------------------------------------------------*/
 inline static void viaIfrSetIrq(VrEmu6522* vr6522)
 {
+  if (!vr6522) return;
+
   uint8_t ier = vr6522->reg[VIA_REG_IER] & 0x7f;
   uint8_t ifr = vr6522->reg[VIA_REG_IFR] & 0x7f;
 
@@ -98,18 +100,24 @@ inline static void viaIfrSetIrq(VrEmu6522* vr6522)
 
 inline static void viaIfrSetBit(VrEmu6522* vr6522, uint8_t bit)
 {
+  if (!vr6522) return;
+
   vr6522->reg[VIA_REG_IFR] |= bit & 0x7f;
   viaIfrSetIrq(vr6522);
 }
 
 inline static void viaIfrResetBit(VrEmu6522* vr6522, uint8_t bit)
 {
+  if (!vr6522) return;
+
   vr6522->reg[VIA_REG_IFR] &= ~(bit & 0x7f);
   viaIfrSetIrq(vr6522);
 }
 
 inline static void viaIerSet(VrEmu6522* vr6522, uint8_t bit)
 {
+  if (!vr6522) return;
+
   if (bit & 0x80)
   {
     vr6522->reg[VIA_REG_IER] |= 0x80 | bit;
@@ -184,6 +192,8 @@ VR_EMU_6522_DLLEXPORT void vrEmu6522Write(VrEmu6522* vr6522, uint8_t addr, uint8
 {
   uint8_t reg = addr & 0x0f;
 
+  if (!vr6522) return;
+
   switch (reg)
   {
     case VIA_REG_T1C_L:
@@ -227,6 +237,8 @@ VR_EMU_6522_DLLEXPORT void vrEmu6522Write(VrEmu6522* vr6522, uint8_t addr, uint8
  */
 VR_EMU_6522_DLLEXPORT uint8_t vrEmu6522Read(VrEmu6522* vr6522, uint8_t addr)
 {
+  if (!vr6522) return 0;
+
   uint8_t reg = addr & 0x0f;
   uint8_t value = vr6522->reg[addr & 0x0f];
 
@@ -248,6 +260,8 @@ VR_EMU_6522_DLLEXPORT uint8_t vrEmu6522Read(VrEmu6522* vr6522, uint8_t addr)
 
 VR_EMU_6522_DLLEXPORT uint8_t vrEmu6522ReadDbg(VrEmu6522* vr6522, uint8_t addr)
 {
+  if (!vr6522) return 0;
+
   return vr6522->reg[addr & 0x0f];
 }
 
@@ -263,6 +277,8 @@ VR_EMU_6522_DLLEXPORT void __time_critical_func(vrEmu6522Tick)(VrEmu6522* vr6522
  */
 VR_EMU_6522_DLLEXPORT void __time_critical_func(vrEmu6522Ticks)(VrEmu6522* vr6522, uint8_t ticks)
 {
+  if (!vr6522) return;
+
   if (vr6522->t1Active)
   {
     int32_t t1 = (vr6522->reg[VIA_REG_T1C_H] << 8) | vr6522->reg[VIA_REG_T1C_L];
