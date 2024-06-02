@@ -31,6 +31,7 @@ struct vrEmu6522_s
   vrEmu6522Model model;
 
   uint8_t reg[16];
+  uint8_t lastportb;
   uint8_t T2L_L;
 
   bool t1Active;
@@ -171,6 +172,7 @@ VR_EMU_6522_DLLEXPORT void vrEmu6522Reset(VrEmu6522* vr6522)
     {
       vr6522->reg[i] = 0;
     }
+    vr6522->lastportb = 0;
 
     for (int i = 11; i < 16; ++i)
     {
@@ -304,7 +306,22 @@ VR_EMU_6522_DLLEXPORT void __time_critical_func(vrEmu6522Ticks)(VrEmu6522* vr652
   if (vr6522->t2Active)
   {
     int32_t t2 = (vr6522->reg[VIA_REG_T2C_H] << 8) | vr6522->reg[VIA_REG_T2C_L];
-    t2 -= ticks;
+
+    if (
+
+      // T2 single-shot
+      ((vr6522->reg[VIA_REG_ACR] & VIA_ACR_T2) == 0) ||
+
+      // Count down pulses on PB6
+      (
+        (vr6522->lastportb           & (1 << 6)) &&
+        !(vr6522->reg[VIA_REG_PORT_B] & (1 << 6))
+      )
+
+    ) {
+      t2 -= ticks;
+    }
+
     if (t2 <= 0)
     {
       viaIfrSetBit(vr6522, VIA_IFR_T2);
@@ -320,6 +337,8 @@ VR_EMU_6522_DLLEXPORT void __time_critical_func(vrEmu6522Ticks)(VrEmu6522* vr652
       vr6522->reg[VIA_REG_T2C_L] = (t2    & 0x00ff);
     }
   }
+
+  vr6522->lastportb = vr6522->reg[VIA_REG_PORT_B];
 }
 
 
