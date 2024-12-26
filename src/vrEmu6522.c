@@ -193,6 +193,7 @@ VR_EMU_6522_DLLEXPORT void vrEmu6522Reset(VrEmu6522* vr6522)
 VR_EMU_6522_DLLEXPORT void vrEmu6522Write(VrEmu6522* vr6522, uint8_t addr, uint8_t data)
 {
   uint8_t reg = addr & 0x0f;
+  uint8_t ogval = vr6522->reg[reg];
 
   if (!vr6522) return;
 
@@ -229,6 +230,24 @@ VR_EMU_6522_DLLEXPORT void vrEmu6522Write(VrEmu6522* vr6522, uint8_t addr, uint8
       viaIerSet(vr6522, data);
       data = vr6522->reg[reg];
       break;
+  }
+
+  // R6522 pg 2-39: "Data may be written into Output Register bits
+  // corresponding to pins which are programmed as inputs. In this case,
+  // however, the output signal is unaffected.
+  //
+  // W65C22 pg 8: "Should data be written into bit positions corresponding to
+  // pins which have been programmed as input, the output pins will be
+  // unaffected."
+
+  if (reg == VIA_REG_PORT_A) {
+    ogval &= (~vr6522->reg[VIA_REG_DDR_A] & 0x0f);
+    data = ogval | (data & vr6522->reg[VIA_REG_DDR_A]);
+  }
+
+  if (reg == VIA_REG_PORT_B) {
+    ogval &= (~vr6522->reg[VIA_REG_DDR_B] & 0x0f);
+    data = ogval | (data & vr6522->reg[VIA_REG_DDR_B]);
   }
 
   vr6522->reg[reg] = data;
