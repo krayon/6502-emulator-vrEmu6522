@@ -193,7 +193,7 @@ VR_EMU_6522_DLLEXPORT void vrEmu6522Reset(VrEmu6522* vr6522)
 VR_EMU_6522_DLLEXPORT void vrEmu6522Write(VrEmu6522* vr6522, uint8_t addr, uint8_t data)
 {
   uint8_t reg = addr & 0x0f;
-  uint8_t ogval = vr6522->reg[reg];
+  uint8_t olddata = vr6522->reg[reg];
 
   if (!vr6522) return;
 
@@ -241,13 +241,13 @@ VR_EMU_6522_DLLEXPORT void vrEmu6522Write(VrEmu6522* vr6522, uint8_t addr, uint8
   // unaffected."
 
   if (reg == VIA_REG_PORT_A) {
-    ogval &= (~vr6522->reg[VIA_REG_DDR_A] & 0x0f);
-    data = ogval | (data & vr6522->reg[VIA_REG_DDR_A]);
+    olddata &= (~vr6522->reg[VIA_REG_DDR_A] & 0xff);
+    data = olddata | (data & vr6522->reg[VIA_REG_DDR_A]);
   }
 
   if (reg == VIA_REG_PORT_B) {
-    ogval &= (~vr6522->reg[VIA_REG_DDR_B] & 0x0f);
-    data = ogval | (data & vr6522->reg[VIA_REG_DDR_B]);
+    olddata &= (~vr6522->reg[VIA_REG_DDR_B] & 0xff);
+    data = olddata | (data & vr6522->reg[VIA_REG_DDR_B]);
   }
 
   vr6522->reg[reg] = data;
